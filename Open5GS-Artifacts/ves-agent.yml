@@ -1,0 +1,174 @@
+datadir: ./data
+primaryCollector:
+  # serverRoot: api
+  fqdn: ONAP IP ADDR ###### REPLACE ######
+  port: ONAP Message router NodePort ###### REPLACE ######
+  secure: false
+  # topic: mytopic
+  user: sample1
+  password: sample1
+  passphrase: sample1
+heartbeat:
+  defaultInterval: 60s
+measurement: 
+  domainAbbreviation: Mvfs
+  defaultInterval: 5s
+  maxBufferingDuration: 1h
+  prometheus: 
+    address: http://OPEN5GS_IP_ADDR:OPEN5GS_Prometheus_Port ###### REPLACE ######
+    timeout: 30s
+    keepalive: 30s
+    rules:
+      defaults:
+        vmId: "{{.labels.instance}}"
+        # target: "{{.labels.VESField}}"
+        labels:
+          - name: VMIdentifier
+            expr: "{{.vmId}}"
+      metrics: 
+        # Metrics that show DSM impact 
+        - target: AdditionalObjects
+          expr: rate(fivegs_smffunction_sm_pdusessioncreationreq[10s]) 
+          object_name: pdu_session_create_request_rate
+          object_instance: requestRate
+          object_keys:
+            - name: snssai
+              expr: "{{.labels.snssai}}"
+        - target: AdditionalObjects
+          expr: rate(fivegs_smffunction_sm_pdusessioncreationsucc[10s]) 
+          object_name: pdu_session_create_request_success_rate
+          object_instance: requestSuccRate
+          object_keys:
+            - name: snssai
+              expr: "{{.labels.snssai}}"
+        - target: AdditionalObjects
+          expr: rate(fivegs_upffunction_sm_n4sessionestabreq[10s]) # First step in creating PDU session (essentially the same as pdu session create request?)
+          object_name: n4_establish
+          object_instance: requestRate
+          object_keys:
+            - name: upf
+              expr: "{{.labels.instance}}"
+        - target: AdditionalObjects
+          expr: rate(fivegs_smffunction_sm_n4sessionreportsucc[10s]) 
+          object_name: n4_establish_success
+          object_instance: successRate
+          object_keys:
+            - name: smf
+              expr: "{{.labels.instance}}"
+        - target: AdditionalObjects
+          expr: rate(fivegs_smffunction_sm_n4sessionestabfail[10s])
+          object_name: n4_establish_fail
+          object_instance: failureRate
+          object_keys:
+            - name: smf
+              expr: "{{.labels.instance}}"
+        - target: AdditionalObjects
+          expr: sum by (container,instance) (kube_pod_container_resource_requests{container='open5gs-smf'} or kube_pod_container_resource_requests{container='open5gs-amf'})
+          object_name: cpu_request
+          object_instance: cpu_cores
+          object_keys:
+            - name: container
+              expr: "{{.labels.container}}"
+        - target: AdditionalObjects
+          expr: rate(fivegs_amffunction_rm_reginitreq[10s])
+          object_name: amf_init_request_rate
+          object_instance: amf_init_reqs_rate
+          object_keys:
+            - name: container
+              expr: "{{.labels.instance}}"
+        - target: AdditionalObjects
+          expr: rate(fivegs_amffunction_rm_reginitsucc[10s])
+          object_name: amf_init_requests_succ_rate
+          object_instance: amf_init_reqs_succ_rate
+          object_keys:
+            - name: container
+              expr: "{{.labels.instance}}"
+
+        # More general metrics 
+        - target: AdditionalObjects
+          expr: rate(fivegs_ep_n3_gtp_indatapktn3upf[10s])  
+          object_name: upf_inbound_traffic
+          object_instance: messageRateIn
+          object_keys:
+            - name: upf
+              expr: "{{.labels.instance}}"
+        - target: AdditionalObjects
+          expr: rate(fivegs_ep_n3_gtp_outdatapktn3upf[10s])
+          object_name: upf_outbound_traffic
+          object_instance: messageRateOut
+          object_keys:
+            - name: upf
+              expr: "{{.labels.instance}}"
+        - target: AdditionalObjects
+          expr: fivegs_smffunction_sm_sessionnbr
+          object_name: smf_sessions
+          object_instance: total_sessions
+          object_keys:
+            - name: snssai
+              expr: "{{.labels.snssai}}"
+        - target: AdditionalObjects
+          expr: ues_active
+          object_name: active_ues
+          object_instance: activeUEs
+          object_keys:
+            - name: smf
+              expr: "{{.labels.instance}}"
+        - target: AdditionalObjects
+          expr: avg(rate(container_cpu_usage_seconds_total[1m])) by (container,instance) / scalar(sum(container_spec_cpu_quota / container_spec_cpu_period))
+          object_name: container_cpu_use
+          object_instance: cpu_use
+          object_keys:
+            - name: vnf
+              expr: "{{.labels.container}}"
+        # Additional slice specific messages 
+        - target: AdditionalObjects
+          expr: fivegs_amffunction_rm_registeredsubnbr
+          object_name: registered_subscribers
+          object_instance: num_subscribers
+          object_keys:
+            - name: snssai
+              expr: "{{.labels.snssai}}"
+        - target: AdditionalObjects
+          expr: increase(fivegs_pcffunction_pa_policysmassoreq[10s])
+          object_name: pcf_policy_association_requests
+          object_instance: num_requests
+          object_keys:
+            - name: snssai
+              expr: "{{.labels.snssai}}"
+        - target: AdditionalObjects
+          expr: increase(fivegs_pcffunction_pa_policysmassosucc[10s])
+          object_name: pcf_policy_association_requests_success
+          object_instance: num_requests
+          object_keys:
+            - name: snssai
+              expr: "{{.labels.snssai}}"
+        - target: AdditionalObjects
+          expr: rate(fivegs_pcffunction_pa_sessionnbr[10s])
+          object_name: pcf_policy_association_number
+          object_instance: num_requests
+          object_keys:
+            - name: snssai
+              expr: "{{.labels.snssai}}"
+        
+
+          
+
+event:
+  vnfName: dpa2bhsxp5001v
+  # reportingEntityName: dpa2bhsxp5001vm001oam001
+  reportingEntityID: 1af5bfa9-40b4-4522-b045-40e54f0310fc
+  maxSize: 2000000
+  nfNamingCode: hsxp
+  nfcNamingCodes: 
+    - type: oam
+      vnfcs: [lr-ope-0,lr-ope-1,lr-ope-2] 
+    - type: etl
+      vnfcs: [lr-pro-0,lr-pro-1] 
+  retryInterval: 5s
+  maxMissed: 2
+alertManager:
+  bind: localhost:9095
+cluster:
+  debug: true
+  displayLogs: false
+debug: true

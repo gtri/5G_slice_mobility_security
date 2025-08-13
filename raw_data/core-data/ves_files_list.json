@@ -1,0 +1,19 @@
+{
+    "raw_data/core-data/benign-data.json": {
+        "mal": 0,
+        "target_slice_sd": "None"
+    },
+    "raw_data/core-data/slice2-attack.json": {
+        "mal": 1,
+        "target_slice_sd": "222222"
+    }, "raw_data/core-data/internet-attack.json": {
+        "mal": 1,
+        "target_slice_sd": "111111"
+    }, "raw_data/core-data/slice3-attack.json": {
+        "mal": 1,
+        "target_slice_sd": "333333"
+    }, "raw_data/core-data/slice4-attack.json": {
+        "mal": 1,
+        "target_slice_sd": "444444"
+    }
+}
